@@ -1,3 +1,4 @@
+// Impor semua handler
 const {
     addBookHandler,
     getAllBooksHandler,
@@ -6,6 +7,7 @@ const {
     deleteBookByIdHandler,
 } = require('./handler');
 
+// Definisikan rute untuk server Hapi
 const routes = [
     {
         method: 'POST',
@@ -34,4 +36,5 @@ const routes = [
     },
 ];
 
+// Ekspor agar dapat digunakan oleh server.js
 module.exports = routes;
