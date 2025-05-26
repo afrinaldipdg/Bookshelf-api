@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# Bookshelf API Test Script (Versi Perbaikan)
+# Bookshelf API Test Script (Versi Final Perbaikan)
 # ==============================================================================
 #
 # Script ini digunakan untuk menjalankan serangkaian tes otomatis pada Bookshelf API.
@@ -14,7 +14,7 @@
 #   Instalasi jq: `sudo apt install jq` (Debian/Ubuntu) atau `brew install jq` (macOS)
 #
 # Cara Penggunaan:
-# 1. Simpan script ini dengan nama `bookshelf_api_tests.sh`.
+# 1. Salin seluruh kode ini dan simpan dengan nama `bookshelf_api_tests.sh`.
 # 2. Berikan izin eksekusi: `chmod +x bookshelf_api_tests.sh`
 # 3. Jalankan script: `./bookshelf_api_tests.sh`
 #
@@ -32,8 +32,9 @@
 # ==============================================================================
 
 # --- Konfigurasi Environment ---
-# Ganti dengan URL dasar API Bookshelf Anda
-BASE_URL="https://amplified-telling-pie.glitch.me/books"
+# Ganti dengan URL dasar Glitch Anda, TANPA /books di akhir.
+# Contoh: https://amplified-telling-pie.glitch.me
+BASE_URL="https://amplified-telling-pie.glitch.me"
 
 # Nama file log akan menyertakan timestamp
 LOG_TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
@@ -82,7 +83,7 @@ validate_response() {
     local expected_json_message_partial="$5"
     local output_book_id_var="$6" # Variabel untuk menyimpan bookId jika sukses
 
-    # Ekstrak body JSON dari respons
+    # Ekstrak body JSON dari respons (setelah header)
     local response_body=$(echo "${response_full}" | sed '1,/^\r*$/d')
 
     # Ekstrak status HTTP dari header (curl -i)
@@ -128,7 +129,7 @@ validate_response() {
     fi
 
     if [[ "${test_passed}" == "true" ]]; then
-        echo "? Tes BERHASIL: ${test_name}" | tee -a "$LOG_FILE"
+        echo "✅ Tes BERHASIL: ${test_name}" | tee -a "$LOG_FILE"
         # Jika ada variabel untuk menyimpan bookId dan tes sukses, simpan ID-nya
         if [[ -n "${output_book_id_var}" && -n "${extracted_book_id}" ]]; then
             eval "${output_book_id_var}=\"${extracted_book_id}\""
@@ -136,7 +137,7 @@ validate_response() {
         fi
         return 0 # Sukses
     else
-        echo "? Tes GAGAL: ${test_name}" | tee -a "$LOG_FILE"
+        echo "❌ Tes GAGAL: ${test_name}" | tee -a "$LOG_FILE"
         echo "    Detail Kegagalan:" | tee -a "$LOG_FILE"
         echo "    - Status HTTP: Diharapkan '${expected_http_status}', Didapat '${actual_http_status}'" | tee -a "$LOG_FILE"
         echo "    - Status JSON: Diharapkan '${expected_json_status}', Didapat '${actual_json_status}'" | tee -a "$LOG_FILE"
@@ -189,7 +190,8 @@ cleanup_books() {
     print_section_header "CLEANUP: MENGHAPUS BUKU-BUKU YANG DIBUAT"
     echo "Mendapatkan semua buku untuk dihapus..." | tee -a "$LOG_FILE"
 
-    local get_all_response=$(curl -i -s -X GET "${BASE_URL}")
+    # Gunakan path /books untuk GET all
+    local get_all_response=$(curl -i -s -X GET "${BASE_URL}/books")
     local book_ids_to_delete=$(echo "${get_all_response}" | sed '1,/^\r*$/d' | jq -r '.data.books[].id // empty')
 
     if [[ -z "${book_ids_to_delete}" ]]; then
@@ -199,15 +201,18 @@ cleanup_books() {
 
     echo "ID buku yang akan dihapus: ${book_ids_to_delete}" | tee -a "$LOG_FILE"
     for book_id in ${book_ids_to_delete}; do
-        echo "Menghapus buku dengan ID: ${book_id}" | tee -a "$LOG_FILE"
-        local delete_response=$(curl -i -s -X DELETE "${BASE_URL}/${book_id}")
+        # Menggunakan `printf` untuk menghindari masalah `Broken pipe` dengan `echo`
+        # ketika output dialihkan ke `tee` dan proses mungkin sudah selesai.
+        printf "Menghapus buku dengan ID: %s\n" "${book_id}" | tee -a "$LOG_FILE"
+        # Gunakan path /books/{bookId} untuk DELETE
+        local delete_response=$(curl -i -s -X DELETE "${BASE_URL}/books/${book_id}")
         local actual_http_status=$(echo "${delete_response}" | head -n 1 | awk '{print $2}')
         local actual_json_status=$(echo "${delete_response}" | sed '1,/^\r*$/d' | jq -r '.status // empty')
 
         if [[ "${actual_http_status}" == "200" && "${actual_json_status}" == "success" ]]; then
-            echo "? Berhasil menghapus buku ${book_id}." | tee -a "$LOG_FILE"
+            printf "✅ Berhasil menghapus buku %s.\n" "${book_id}" | tee -a "$LOG_FILE"
         else
-            echo "? Gagal menghapus buku ${book_id}." | tee -a "$LOG_FILE"
+            printf "❌ Gagal menghapus buku %s.\n" "${book_id}" | tee -a "$LOG_FILE"
             echo "Respons: ${delete_response}" | tee -a "$LOG_FILE"
         fi
     done
@@ -231,7 +236,7 @@ print_section_header "BAGIAN 1: TES MANDATORY - PENAMBAHAN BUKU"
 # M1: Add Book With Complete Data
 run_api_test \
     "M1: Menambahkan Buku dengan Data Lengkap" \
-    "POST" "/"\
+    "POST" "/books"\
     "{\"name\":\"${NEW_BOOK_BASE_NAME} 1 $(date +%s%N)\",\"year\":2023,\"author\":\"Penulis A\",\"summary\":\"Ringkasan buku A\",\"publisher\":\"Penerbit X\",\"pageCount\":150,\"readPage\":25,\"reading\":true}" \
     "201" "success" "Buku berhasil ditambahkan" \
     "BOOK_ID"
@@ -239,7 +244,7 @@ run_api_test \
 # M2: Add Book With Finished Reading (readPage === pageCount)
 run_api_test \
     "M2: Menambahkan Buku yang Sudah Selesai Dibaca" \
-    "POST" "/"\
+    "POST" "/books"\
     "{\"name\":\"${NEW_BOOK_BASE_NAME} 2 $(date +%s%N)\",\"year\":2022,\"author\":\"Penulis B\",\"summary\":\"Ringkasan buku B\",\"publisher\":\"Penerbit Y\",\"pageCount\":100,\"readPage\":100,\"reading\":false}" \
     "201" "success" "Buku berhasil ditambahkan" \
     "BOOK_ID_FINISHED_READING"
@@ -247,14 +252,14 @@ run_api_test \
 # M3: Add Book Without Name (missing 'name' property)
 run_api_test \
     "M3: Menambahkan Buku Tanpa Properti 'name'" \
-    "POST" "/"\
+    "POST" "/books"\
     "{\"year\":2021,\"author\":\"Penulis C\",\"summary\":\"Ringkasan buku C\",\"publisher\":\"Penerbit Z\",\"pageCount\":200,\"readPage\":50,\"reading\":true}" \
     "400" "fail" "Gagal menambahkan buku. Mohon isi nama buku"
 
 # M4: Add Book with readPage > pageCount
 run_api_test \
     "M4: Menambahkan Buku dengan readPage > pageCount" \
-    "POST" "/"\
+    "POST" "/books"\
     "{\"name\":\"${NEW_BOOK_BASE_NAME} Invalid Page\",\"year\":2020,\"author\":\"Penulis D\",\"summary\":\"Ringkasan buku D\",\"publisher\":\"Penerbit W\",\"pageCount\":100,\"readPage\":101,\"reading\":false}" \
     "400" "fail" "Gagal menambahkan buku. readPage tidak boleh lebih besar dari pageCount"
 
@@ -266,7 +271,7 @@ print_section_header "BAGIAN 2: TES MANDATORY - MELIHAT DAFTAR BUKU"
 # M5: Get All Books
 run_api_test \
     "M5: Mendapatkan Seluruh Buku" \
-    "GET" "/"\
+    "GET" "/books"\
     "" \
     "200" "success" ""
 
@@ -278,14 +283,14 @@ print_section_header "BAGIAN 3: TES MANDATORY - MELIHAT DETAIL BUKU"
 # M6: Get Book Detail With Correct ID
 run_api_test \
     "M6: Mendapatkan Detail Buku dengan ID yang Benar" \
-    "GET" "/${BOOK_ID}" \
+    "GET" "/books/${BOOK_ID}" \
     "" \
     "200" "success" ""
 
 # M7: Get Book Detail With Invalid ID
 run_api_test \
     "M7: Mendapatkan Detail Buku dengan ID yang Tidak Ditemukan" \
-    "GET" "/invalidBookIdXYZ123" \
+    "GET" "/books/invalidBookIdXYZ123" \
     "" \
     "404" "fail" "Buku tidak ditemukan"
 
@@ -297,28 +302,28 @@ print_section_header "BAGIAN 4: TES MANDATORY - MENGUBAH DATA BUKU"
 # M8: Update Book With Complete Data
 run_api_test \
     "M8: Memperbarui Buku dengan Data Lengkap" \
-    "PUT" "/${BOOK_ID}" \
+    "PUT" "/books/${BOOK_ID}" \
     "{\"name\":\"${UPDATED_BOOK_BASE_NAME} 1 $(date +%s%N)\",\"year\":2024,\"author\":\"Penulis A Update\",\"summary\":\"Ringkasan update A\",\"publisher\":\"Penerbit X Update\",\"pageCount\":160,\"readPage\":160,\"reading\":false}" \
     "200" "success" "Buku berhasil diperbarui"
 
 # M9: Update Book Without Name (missing 'name' property)
 run_api_test \
     "M9: Memperbarui Buku Tanpa Properti 'name'" \
-    "PUT" "/${BOOK_ID}" \
+    "PUT" "/books/${BOOK_ID}" \
     "{\"year\":2025,\"author\":\"Penulis B Update\",\"summary\":\"Ringkasan update B\",\"publisher\":\"Penerbit Y Update\",\"pageCount\":170,\"readPage\":30,\"reading\":true}" \
     "400" "fail" "Gagal memperbarui buku. Mohon isi nama buku"
 
 # M10: Update Book with readPage > pageCount
 run_api_test \
     "M10: Memperbarui Buku dengan readPage > pageCount" \
-    "PUT" "/${BOOK_ID}" \
+    "PUT" "/books/${BOOK_ID}" \
     "{\"name\":\"${UPDATED_BOOK_BASE_NAME} Invalid Page\",\"year\":2026,\"author\":\"Penulis C Update\",\"summary\":\"Ringkasan update C\",\"publisher\":\"Penerbit Z Update\",\"pageCount\":100,\"readPage\":101,\"reading\":false}" \
     "400" "fail" "Gagal memperbarui buku. readPage tidak boleh lebih besar dari pageCount"
 
 # M11: Update Book with Invalid ID
 run_api_test \
     "M11: Memperbarui Buku dengan ID yang Tidak Ditemukan" \
-    "PUT" "/invalidUpdateBookId123" \
+    "PUT" "/books/invalidUpdateBookId123" \
     "{\"name\":\"${UPDATED_BOOK_BASE_NAME} Non Existent\",\"year\":2027,\"author\":\"Penulis D Update\",\"summary\":\"Ringkasan update D\",\"publisher\":\"Penerbit W Update\",\"pageCount\":180,\"readPage\":40,\"reading\":true}" \
     "404" "fail" "Gagal memperbarui buku. Id tidak ditemukan"
 
@@ -331,7 +336,7 @@ print_section_header "BAGIAN 5: TES OPTIONAL - QUERY PARAMETERS"
 # Kita akan mencari nama buku yang baru saja diupdate (M8)
 run_api_test \
     "O1: Mendapatkan Buku Berdasarkan Query Parameter 'name'" \
-    "GET" "/?name=${UPDATED_BOOK_BASE_NAME}" \
+    "GET" "/books?name=${UPDATED_BOOK_BASE_NAME}" \
     "" \
     "200" "success" ""
 
@@ -339,7 +344,7 @@ run_api_test \
 # Akan mencari buku yang reading: true
 run_api_test \
     "O2: Mendapatkan Buku Berdasarkan Query Parameter 'reading=1'" \
-    "GET" "/?reading=1" \
+    "GET" "/books?reading=1" \
     "" \
     "200" "success" ""
 
@@ -347,7 +352,7 @@ run_api_test \
 # Akan mencari buku yang reading: false (termasuk yang finished: true)
 run_api_test \
     "O3: Mendapatkan Buku Berdasarkan Query Parameter 'reading=0'" \
-    "GET" "/?reading=0" \
+    "GET" "/books?reading=0" \
     "" \
     "200" "success" ""
 
@@ -355,7 +360,7 @@ run_api_test \
 # Akan mencari buku yang finished: true
 run_api_test \
     "O4: Mendapatkan Buku Berdasarkan Query Parameter 'finished=1'" \
-    "GET" "/?finished=1" \
+    "GET" "/books?finished=1" \
     "" \
     "200" "success" ""
 
@@ -363,7 +368,7 @@ run_api_test \
 # Akan mencari buku yang finished: false
 run_api_test \
     "O5: Mendapatkan Buku Berdasarkan Query Parameter 'finished=0'" \
-    "GET" "/?finished=0" \
+    "GET" "/books?finished=0" \
     "" \
     "200" "success" ""
 
@@ -375,14 +380,14 @@ print_section_header "BAGIAN 6: TES MANDATORY - MENGHAPUS BUKU"
 # M12: Delete Book With Correct ID
 run_api_test \
     "M12: Menghapus Buku dengan ID yang Benar" \
-    "DELETE" "/${BOOK_ID}" \
+    "DELETE" "/books/${BOOK_ID}" \
     "" \
     "200" "success" "Buku berhasil dihapus"
 
 # M13: Delete Book With Invalid ID
 run_api_test \
     "M13: Menghapus Buku dengan ID yang Tidak Ditemukan" \
-    "DELETE" "/invalidDeleteBookId123" \
+    "DELETE" "/books/invalidDeleteBookId123" \
     "" \
     "404" "fail" "Buku gagal dihapus. Id tidak ditemukan"
 
@@ -393,7 +398,7 @@ echo "" | tee -a "$LOG_FILE"
 echo "====================================================" | tee -a "$LOG_FILE"
 echo "=============== SEMUA TES SELESAI ==================" | tee -a "$LOG_FILE"
 echo "====================================================" | tee -a "$LOG_FILE"
-echo "Jika tidak ada pesan '? Tes GAGAL' di atas, semua tes berhasil dilewati." | tee -a "$LOG_FILE"
+echo "Jika tidak ada pesan '❌ Tes GAGAL' di atas, semua tes berhasil dilewati." | tee -a "$LOG_FILE"
 echo "Log lengkap pengujian tersedia di: ${LOG_FILE}" | tee -a "$LOG_FILE"
 
 # --- Final Cleanup ---
