@@ -1,5 +1,10 @@
-// Membuat array kosong untuk menyimpan data buku
-const books = [];
+/**
+ * File ini berfungsi sebagai penyimpanan data buku sementara
+ * Menggunakan array kosong yang akan diisi objek buku
+ */
 
-// Mengekspor array agar bisa digunakan di file lain
-module.exports = books;
+// Array untuk menyimpan buku-buku yang ditambahkan
+const daftarBuku = [];
+
+// Ekspor array agar bisa digunakan di handler.js
+module.exports = daftarBuku;
