@@ -1,40 +1,47 @@
-// Impor semua handler
+/**
+ * File ini mendefinisikan semua endpoint (rute) untuk REST API manajemen buku.
+ * Setiap rute akan mengarahkan permintaan HTTP ke handler yang sesuai.
+ */
+
 const {
-    addBookHandler,
-    getAllBooksHandler,
-    getBookByIdHandler,
-    editBookByIdHandler,
-    deleteBookByIdHandler,
+  simpanBukuBaru,
+  ambilSemuaBuku,
+  ambilBukuBerdasarkanId,
+  perbaruiBukuBerdasarkanId,
+  hapusBukuBerdasarkanId,
 } = require('./handler');
 
-// Definisikan rute untuk server Hapi
-const routes = [
-    {
-        method: 'POST',
-        path: '/books',
-        handler: addBookHandler,
-    },
-    {
-        method: 'GET',
-        path: '/books',
-        handler: getAllBooksHandler,
-    },
-    {
-        method: 'GET',
-        path: '/books/{bookId}',
-        handler: getBookByIdHandler,
-    },
-    {
-        method: 'PUT',
-        path: '/books/{bookId}',
-        handler: editBookByIdHandler,
-    },
-    {
-        method: 'DELETE',
-        path: '/books/{bookId}',
-        handler: deleteBookByIdHandler,
-    },
+/**
+ * Array daftar endpoint yang digunakan oleh server Hapi.
+ * Masing-masing berisi method, path, dan fungsi handler-nya.
+ */
+const daftarRute = [
+  {
+    method: 'POST',
+    path: '/books',
+    handler: simpanBukuBaru, // Endpoint untuk menambah buku baru
+  },
+  {
+    method: 'GET',
+    path: '/books',
+    handler: ambilSemuaBuku, // Endpoint untuk mengambil semua data buku
+  },
+  {
+    method: 'GET',
+    path: '/books/{bookId}',
+    handler: ambilBukuBerdasarkanId, // Endpoint untuk mengambil satu buku berdasarkan ID
+  },
+  {
+    method: 'PUT',
+    path: '/books/{bookId}',
+    handler: perbaruiBukuBerdasarkanId, // Endpoint untuk memperbarui data buku
+  },
+  {
+    method: 'DELETE',
+    path: '/books/{bookId}',
+    handler: hapusBukuBerdasarkanId, // Endpoint untuk menghapus buku
+  },
 ];
 
-// Ekspor agar dapat digunakan oleh server.js
-module.exports = routes;
+// Mengekspor array daftar rute agar bisa didaftarkan di server.js
+module.exports = daftarRute;
