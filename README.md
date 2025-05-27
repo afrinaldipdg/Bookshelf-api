@@ -1,7 +1,7 @@
 # 📚 Bookshelf API
 
-![Node.js](https://img.shields.io/badge/Node.js-v14.17.0+-green?style=flat-square&logo=node.js)
-![Hapi.js](https://img.shields.io/badge/Hapi.js-%5E20.1.2-blue?style=flat-square&logo=hapijs)
+![Node.js](https://img.shields.io/badge/Node.js-v18.13.0+-green?style=flat-square&logo=node.js)
+![Hapi.js](https://img.shields.io/badge/Hapi.js-%5E21.3.2-blue?style=flat-square&logo=hapijs)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
 > RESTful API untuk mengelola koleksi buku secara lokal. Dibangun menggunakan Node.js dan Hapi.js sebagai bagian dari submission Dicoding: *Belajar Membuat Aplikasi Back-End untuk Pemula*.
@@ -24,8 +24,8 @@
 
 ## 🛠️ Teknologi yang Digunakan
 
-- [Node.js](https://nodejs.org/) v14.17.0+
-- [Hapi.js](https://hapi.dev/) ^20.1.2
+- [Node.js](https://nodejs.org/) v18.13.0+
+- [Hapi.js](https://hapi.dev/) ^21.3.2
 - [Nanoid](https://github.com/ai/nanoid) untuk ID unik
 - [ESLint](https://eslint.org/) dengan konfigurasi Dicoding
 - [Nodemon](https://nodemon.io/) (opsional, untuk pengembangan)
