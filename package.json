@@ -1,13 +1,13 @@
 {
   "name": "submission",
   "version": "1.0.0",
-  "description": "",
+  "description": "backend nodejs",
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "afrinaldi",
   "license": "ISC",
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
