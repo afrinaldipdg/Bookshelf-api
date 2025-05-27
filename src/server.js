@@ -1,33 +1,41 @@
-// Impor framework Hapi.js
-const Hapi = require('@hapi/hapi');
-// Impor rute yang sudah didefinisikan
-const routes = require('./routes');
+/**
+ * File utama untuk menjalankan server Hapi
+ * Menyediakan endpoint HTTP untuk aplikasi manajemen buku
+ */
 
-// Fungsi async untuk inisialisasi server
-const init = async () => {
+const Hapi = require('@hapi/hapi');
+const ruteBuku = require('./routes');
+
+/**
+ * Fungsi inisialisasi server
+ */
+const mulaiServer = async () => {
     const server = Hapi.server({
         port: 9000,
-        host: 'localhost', // Jalankan hanya secara lokal
+        host: 'localhost',
         routes: {
             cors: {
-                origin: ['*'], // Izinkan semua origin (CORS) untuk testing
+                origin: ['*'], // Izinkan permintaan dari semua domain (CORS)
             },
         },
     });
 
-    // Registrasi rute
-    server.route(routes);
+    // Registrasi semua rute dari file routes.js
+    server.route(ruteBuku);
 
     // Mulai server
     await server.start();
-    console.log(`Server berjalan pada ${server.info.uri}`);
+    console.log(`🚀 Server aktif di: ${server.info.uri}`);
 };
 
-// Tangani error Promise yang tidak ditangani agar server tidak crash
+/**
+ * Tangani error yang tidak ditangani secara eksplisit
+ * Agar server tidak crash tanpa log
+ */
 process.on('unhandledRejection', (err) => {
-    console.log(err);
+    console.error('❌ Terjadi kesalahan:', err);
     process.exit(1);
 });
 
-// Panggil fungsi inisialisasi
-init();
+// Jalankan server
+mulaiServer();
