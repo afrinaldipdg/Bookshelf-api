@@ -37,16 +37,16 @@
 ```
 Bookshelf-api/
 ├── src/
-│   ├── books.js           # Penyimpanan data buku (in-memory)
-│   ├── handler.js         # Handler untuk setiap endpoint
-│   ├── routes.js          # Daftar rute API
-│   └── server.js          # Entry point server Hapi
-├── .eslintrc.json         # Konfigurasi ESLint
-├── package.json           # Informasi proyek dan dependensi
-├── README.md              # Dokumentasi proyek
-└── test_bookshelf_api.sh  # Skrip pengujian API (opsional)
+│   ├── books.js                        # Penyimpanan data buku (in-memory)
+│   ├── handler.js                      # Handler untuk setiap endpoint
+│   ├── routes.js                       # Daftar rute API
+│   └── server.js                       # Entry point server Hapi
+├── .eslintrc.json                      # Konfigurasi ESLint
+├── package.json                        # Informasi proyek dan dependensi
+├── README.md                           # Dokumentasi proyek
+├── test_bookshelf_api.sh               # Skrip pengujian API (opsional)
+└── test_bookshelf_api_with_logging.sh  # Skrip pengujian API dengan log file(opsional)
 ```
-
 ---
 
 ## ⚙️ Cara Menjalankan Proyek
@@ -134,7 +134,7 @@ Bookshelf-api/
 
 ## 🧪 Pengujian API
 
-Skrip pengujian tersedia di file `test_bookshelf_api.sh`. Pastikan Anda telah memberikan izin eksekusi:
+Skrip pengujian tersedia di file `test_bookshelf_api.sh` atau `test_bookshelf_api_with_logging.sh`. Pastikan Anda telah memberikan izin eksekusi:
 
 ```bash
 chmod +x test_bookshelf_api.sh
