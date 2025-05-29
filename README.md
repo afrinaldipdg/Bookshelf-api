@@ -141,6 +141,11 @@ chmod +x test_bookshelf_api.sh
 ./test_bookshelf_api.sh
 ```
 
+```bash
+chmod +x test_bookshelf_api_with_logging.sh
+./test_bookshelf_api.sh
+```
+
 ---
 
 ## 📄 Lisensi
