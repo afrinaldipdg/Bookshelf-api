@@ -1,29 +1,25 @@
 {
     "env": {
-        "commonjs": true,
-        "es2021": true,
-        "node": true
+      "node": true,
+      "es2021": true
     },
-    "extends": "eslint:recommended",
+    "extends": [
+      "airbnb-base" // Menggunakan set aturan Airbnb
+    ],
     "parserOptions": {
-        "ecmaVersion": 12
+      "ecmaVersion": "latest", // Menggunakan versi ECMAScript terbaru yang didukung
+      "sourceType": "module"   // Penting jika Anda mulai menggunakan import/export
     },
     "rules": {
-        "indent": [
-            "error",
-            4
-        ],
-        "linebreak-style": [
-            "error",
-            "unix"
-        ],
-        "quotes": [
-            "error",
-            "single"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ]
+      // Menimpa atau menambahkan aturan sesuai kebutuhan proyek Anda
+      "no-console": "off", // Izinkan console.log
+      "indent": ["error", 2], // Airbnb defaultnya 2 spasi, Anda bisa ubah ke 4
+      "linebreak-style": ["error", "unix"], // Tetap unix
+      "quotes": ["error", "single"], // Tetap single quotes
+      "semi": ["error", "always"], // Tetap always semi
+      "camelcase": "off", // Izinkan snake_case jika diperlukan (misalnya untuk variabel Hapi)
+      "no-unused-vars": ["error", { "argsIgnorePattern": "h" }], // Khusus untuk Hapi.js
+      "prefer-destructuring": "off", // Mematikan aturan prefer destructuring jika tidak selalu diinginkan
+      "max-len": ["error", { "code": 100, "ignoreUrls": true }] // Batasan panjang baris
     }
-}
+  }
